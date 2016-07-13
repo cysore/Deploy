@@ -46,7 +46,7 @@
 		</div>
 		@endif
 
-        <a href="#">I forgot my password</a>&nbsp;&nbsp;&nbsp;&nbsp;
+        <a href="/FindPass/Index">I forgot my password</a>&nbsp;&nbsp;&nbsp;&nbsp;
         <a href="{{ url('/register') }}" class="text-center">Register a new membership</a>
 
 	</div><!-- /.login-box-body -->

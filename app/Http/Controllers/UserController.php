@@ -14,9 +14,9 @@ class UserController extends Controller {
 	public function Index() {
 		return view('user.register');
 	}
-	
+
 	//测试用例
-	public function demo(){
+	public function demo() {
 		return $this->dispatchJump('用户已经被激活，不能重复激活！', 0);
 		die();
 		// 从表单收集的数据 注册用户
@@ -46,8 +46,11 @@ class UserController extends Controller {
 
 			// 获取此用户的激活码 并发送激活邮件
 			$activationCode = $user->getActivationCode();
-			$this->sendEmailActivation($user->id, $activationCode);
-			
+			//$this->sendEmailActivation($user->id, $activationCode);
+			Mail::send('emails.activation', ['user' => $user, 'code' => $activationCode], function ($m) use ($user) {
+				$m->to($user->email, $user->nickname);
+			});
+
 			return $this->dispatchJump('恭喜您，注册成功！请登录您的邮箱进行激活。', 1);
 		} catch (\Cartalyst\Sentry\Users\LoginRequiredException $e) {
 			return redirect()->back()->withErrors('字段不能为空');
@@ -59,13 +62,12 @@ class UserController extends Controller {
 			return redirect()->back()->withErrors('密码错误');
 		}
 	}
-	
+
 	//发送注册码邮件
-	protected function sendEmailActivation($id, $activationCode)
-    {
+	/*protected function sendEmailActivation($id, $activationCode) {
 		$user = User::find($id);
 
-		try{
+		try {
 			Mail::send('emails.activation', ['user' => $user, 'code' => $activationCode], function ($m) use ($user) {
 				//$m->from('liujun@taojinjia.com', 'Laravel');
 				$m->to($user->email, $user->nickname);
@@ -73,7 +75,7 @@ class UserController extends Controller {
 		} catch (\Exception $ex) {
 			return $ex->getMessage();
 		}
-    }
+	}*/
 
 	//激活用户
 	public function Activation(Request $request) {
@@ -94,16 +96,61 @@ class UserController extends Controller {
 			return $this->dispatchJump('用户已经被激活，不能重复激活！', 0);
 		}
 	}
-	
+
 	//跳转页面
-	protected function dispatchJump($message, $status=1, $jumpUrl=''){
+	protected function dispatchJump($message, $status = 1, $jumpUrl = '') {
 		$waitSecond = 5;
-		if($status){
+		if ($status) {
 			empty($jumpUrl) && $jumpUrl = '/';
-		}else{
+		} else {
 			empty($jumpUrl) && $jumpUrl = 'javascript:history.back(-1);';
 		}
-		return view('user.redirect', ['message'=>$message, 'status'=>$status, 'jumpUrl'=>$jumpUrl, 'waitSecond'=>$waitSecond]);
+		return view('user.redirect', ['message' => $message, 'status' => $status, 'jumpUrl' => $jumpUrl, 'waitSecond' => $waitSecond]);
+	}
+
+	//重置密码
+	public function ResetPassword(Request $request) {
+		try {
+			// 根据 email 查找用户
+			$user = Sentry::findUserByLogin($request->get('email'));
+			
+			// 获取重置代码
+			$resetCode = $user->getResetPasswordCode();
+
+			// 重置代码，通过 email 发送给用户
+			Mail::send('emails.activation', ['user' => $user, 'code' => $resetCode], function ($m) use ($user) {
+				$m->to($user->email, $user->nickname);
+			});
+			
+			return $this->dispatchJump('请登录您的邮箱进行验证！', 0);
+		} catch (Cartalyst\Sentry\Users\UserNotFoundException $e) {
+			return $this->dispatchJump('用户不存在！', 0);
+		}
+	}
+
+	//验证并修改密码
+	public function CheckResetPassword(Request $request) {
+		try {
+			// 查询用户
+			$user = Sentry::findUserById($request->get('id'));
+			$restCode = $request->get('code');
+			$newPassword = $request->get('newPassword');
+			
+			// 检查重置密码的代码是否有效
+			if ($user->checkResetPasswordCode($restCode)) {
+				// 重置用户密码
+				if ($user->attemptResetPassword($restCode, $newPassword)) {
+
+					// 密码重置通过
+				} else {
+					// 密码重置失败
+				}
+			} else {
+				// 所提供的密码重置代码是无效的
+			}
+		} catch (Cartalyst\Sentry\Users\UserNotFoundException $e) {
+			return $this->dispatchJump('用户不存在！', 0);
+		}
 	}
 
 	//登录页面
@@ -117,7 +164,7 @@ class UserController extends Controller {
 			'email' => $request->get('email'),
 			'password' => $request->get('password'),
 		);
-		$remember = (Boolean)$request->get('remember');
+		$remember = (Boolean) $request->get('remember');
 		try {
 			$user = Sentry::authenticate($cred, $remember);
 			if ($user) {

@@ -4,7 +4,7 @@
 <div class="login-box">
 	<div class="register-box">
       <div class="register-logo">
-        <a href="/index"><b>Deploy</b></a>
+        <a href="/"><b>Deploy</b></a>
       </div>
       <div class="register-box-body">
         <p class="login-box-msg">Register a new membership</p>
