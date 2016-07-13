@@ -131,11 +131,20 @@ Route::group(['middleware' => ['web']], function () {
 
 Route::group(['middleware' => 'web'], function () {
     Route::get('/', 'HomeController@index');
-	Route::get('/register', 'UserController@Index');
-	Route::post('/postReg', 'UserController@register');
-	Route::get('/login', 'UserController@Login');
-	Route::post('/toLogin', 'UserController@toLogin');
-	Route::get('/logout', 'UserController@logout');
 	Route::get('/test', 'UserController@demo');
-	Route::get('/user/activateemail', 'UserController@Activation');
+	//注册
+	Route::get('/register', 'User\RegisterController@Index');
+	Route::post('/postReg', 'User\RegisterController@Register');
+	Route::get('/user/activateemail', 'User\RegisterController@Activation');
+	
+	//登录
+	Route::get('/login', 'User\LoginController@Index');
+	Route::post('/toLogin', 'User\LoginController@Login');
+	Route::get('/logout', 'User\LoginController@logout');
+	
+	//找回密码
+	Route::get('/FindPass/Index', 'User\PasswordController@Index');
+	Route::post('/FindPass/Send', 'User\PasswordController@ResetAndEmail');
+	Route::get('/FindPass/ResetPassword', 'User\PasswordController@ResetPassword');
+	Route::post('/FindPass/Check', 'User\PasswordController@CheckResetPassword');
 });
