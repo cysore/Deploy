@@ -69,7 +69,6 @@ class UserController extends Controller {
 
 		try {
 			Mail::send('emails.activation', ['user' => $user, 'code' => $activationCode], function ($m) use ($user) {
-				//$m->from('liujun@taojinjia.com', 'Laravel');
 				$m->to($user->email, $user->nickname);
 			});
 		} catch (\Exception $ex) {

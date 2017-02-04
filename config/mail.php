@@ -54,7 +54,7 @@ return [
     |
     */
 
-    'from' => ['address' => 'liujun@taojinjia.com', 'name' => 'Deploy Manager'],
+    'from' => ['address' => 'jun5718@qq.com', 'name' => 'Deploy Manager'],
 
     /*
     |--------------------------------------------------------------------------
